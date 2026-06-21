@@ -40,4 +40,29 @@ public class Scraper
         
         return results;
     }
+
+    public async Task<List<EpisodeResult>> GetEpisodesAsync(string animeUrl)
+    {
+        var episodes = new List<EpisodeResult>();
+        
+        string animeAlias = animeUrl.Split("/").Last();
+        var episodesUrl = $"https://ajax.gogo-load.com/ajax/load-list-episode?ep_start=0&ep_end=500&id=0&default_ep=0&alias={animeAlias}";
+
+        IDocument document = await _context.OpenAsync(episodesUrl);
+
+        var episodeLinks = document.QuerySelectorAll("#episode_related li a");
+
+        foreach (var episodeLink in episodeLinks)
+        {
+            string name = episodeLink.QuerySelector(".name")?.TextContent.Trim() ?? "Episode";
+            string? relativeUrl = episodeLink.GetAttribute("href");
+
+            if (!string.IsNullOrEmpty(relativeUrl))
+            {
+                episodes.Add(new EpisodeResult(name, _baseUrl + relativeUrl.Trim()));
+            }
+        }
+        
+        return episodes;
+    }
 }
