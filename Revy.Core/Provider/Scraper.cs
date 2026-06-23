@@ -65,4 +65,17 @@ public class Scraper
         
         return episodes;
     }
+
+    public async Task<string?> GetIframeUrlAsync(string episodeUrl)
+    {
+        IDocument document = await _context.OpenAsync(episodeUrl);
+
+        var iframe = document.QuerySelector(".play-video iframe");
+        string? iframeUrl = iframe?.GetAttribute("src");
+
+        if (string.IsNullOrEmpty(iframeUrl)) return null;
+        if (iframeUrl.StartsWith("//")) iframeUrl = "https:" + iframeUrl;
+        
+        return iframeUrl;
+    }
 }
